@@ -1,8 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shopping_list/Data/categories.dart';
 import 'package:shopping_list/Model/category.dart';
-import 'package:shopping_list/Model/grocery_item.dart';
 import 'package:http/http.dart' as http;
+import 'package:shopping_list/Model/grocery_item.dart';
 class AddItem extends StatefulWidget {
   const AddItem({super.key});
 
@@ -15,6 +16,11 @@ class _AddItemState extends State<AddItem> {
   var name ='';
   var qty = 1;
   var category = categories[Categories.sweets]!;
+  var issending = false;
+  final url = Uri.https('projectdemo-b27f8-default-rtdb.firebaseio.com','shopping-items.json');
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,22 +103,38 @@ class _AddItemState extends State<AddItem> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: (){
+                  TextButton(onPressed: issending? null : (){
                     formkey.currentState!.reset();
                   }, child: const Text('Reset')),
                   const SizedBox(width: 8,),
-                  ElevatedButton(onPressed: (){
+                  ElevatedButton(onPressed: issending? null : () async{
                     if( formkey.currentState!.validate()){
                       formkey.currentState!.save();
-                      print('$name>>>>>$qty');
-                      Navigator.of(context).pop(
-                        GroceryItem(id: DateTime.now().toString(),
-                            name: name,
-                            quantity:  qty,
-                            category: category)
+                      setState(() {
+                        issending =true;
+                      });
+                      final response = await http .post(url,
+                      headers: {
+                        'Content-Type' : 'application/json',
+                      },
+                        body: json.encode({
+                          'name': name,
+                          'quantity':  qty,
+                          'category': category.title
+                        })
                       );
+                      // print(response.body);
+                      // print(response.statusCode);
+                      final Map<String,dynamic> resData = json.decode(response.body);
+                      if(!context.mounted){
+                        return;
+                      }
+                      Navigator.of(context).pop(GroceryItem(id: resData['name'], name: name, quantity: qty, category: category));
+
                     }
-                  }, child: const Text('Submit'))
+                  }, child:issending ?
+                    const SizedBox(height: 15,width: 15,child: CircularProgressIndicator(),)  :
+                  const Text('Submit'))
                 ],
               )
             ],
