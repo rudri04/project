@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'package:shopping_list/Providers/CategoryProvider.dart';
 import 'package:shopping_list/View/home_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+    create: (context)=>CategoryProvider(),
+      child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {

@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import 'package:shopping_list/Data/categories.dart';
 import 'package:shopping_list/Model/category.dart';
 import 'package:http/http.dart' as http;
 import 'package:shopping_list/Model/grocery_item.dart';
+import 'package:shopping_list/Providers/CategoryProvider.dart';
+import 'package:shopping_list/View/home_page.dart';
 class AddItem extends StatefulWidget {
   const AddItem({super.key});
 
@@ -17,12 +21,13 @@ class _AddItemState extends State<AddItem> {
   var qty = 1;
   var category = categories[Categories.sweets]!;
   var issending = false;
-  final url = Uri.https('projectdemo-b27f8-default-rtdb.firebaseio.com','shopping-items.json');
+  // final url = Uri.https('projectdemo-b27f8-default-rtdb.firebaseio.com','shopping-items.json');
 
 
 
   @override
   Widget build(BuildContext context) {
+    CategoryProvider categoryProvider = Provider.of<CategoryProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add New Items'),
@@ -111,25 +116,24 @@ class _AddItemState extends State<AddItem> {
                     if( formkey.currentState!.validate()){
                       formkey.currentState!.save();
                       setState(() {
-                        issending =true;
+                        issending =false;
                       });
-                      final response = await http .post(url,
-                      headers: {
-                        'Content-Type' : 'application/json',
-                      },
-                        body: json.encode({
-                          'name': name,
-                          'quantity':  qty,
-                          'category': category.title
-                        })
-                      );
+                      // final response = await http .post(url,
+                      // headers: {
+                      //   'Content-Type' : 'application/json',
+                      // },
+                      //   body: json.encode({
+                      //     'name': name,
+                      //     'quantity':  qty,
+                      //     'category': category.title
+                      //   })
+                      // );
                       // print(response.body);
                       // print(response.statusCode);
-                      final Map<String,dynamic> resData = json.decode(response.body);
-                      if(!context.mounted){
-                        return;
-                      }
-                      Navigator.of(context).pop(GroceryItem(id: resData['name'], name: name, quantity: qty, category: category));
+                      // final Map<String,dynamic> resData = json.decode(response.body);
+
+                      categoryProvider.add(name, qty, category);
+
 
                     }
                   }, child:issending ?
